@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#custom
+.vscode/
+shortener/migrations/
+templates/
+url_shortener/settings.py
