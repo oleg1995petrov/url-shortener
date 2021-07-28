@@ -6,7 +6,6 @@ from django.views.generic import View
 from django.contrib import messages
 from django.db.models import F
 
-
 from .models import Shortener
 from .forms import ShortenerForm
 from .utils import check_long_url, get_client_ip
