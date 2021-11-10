@@ -3,9 +3,8 @@ body {
     font-family: sans-serif;
     font-size: 18px;
     text-align: left;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
-
 
 a {
     text-decoration: none;
@@ -16,6 +15,7 @@ a:hover {
     text-decoration: underline;
     color: #2a5885;
 }
+
 
 h1 {
     font-size: 28px;
@@ -36,8 +36,12 @@ p {
     border-top: 1px solid #d3d9de;
 }
 
-.small-text {
+.text-small {
     font-size: 13px;
+}
+
+.link-home {
+    font-size: 16px;
 }
 
 .messages {
@@ -47,7 +51,38 @@ p {
     margin: -10px auto 15px ;
 }
 
-
 .alert ul {
     list-style: none;
+}
+
+/* .tooltip {
+    position: relative;
+    display: inline-block;
+} */
+
+.copy {
+    filter: invert(59%) sepia(9%) saturate(528%) hue-rotate(172deg) brightness(91%) contrast(88%);
+    filter: invert(99%) sepia(11%) saturate(237%) hue-rotate(128deg) brightness(120%) contrast(76%);
+    transition: .3s;
+}
+
+.copy:hover {
+    filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(17deg) brightness(103%) contrast(103%);
+        filter: invert(96%) sepia(0%) saturate(5572%) hue-rotate(50deg) brightness(143%) contrast(76%);
+
+    cursor: pointer;
+}
+
+.bg-gray {
+    background-color: #dee2e6;
+}
+
+.link-dashboard {
+    text-decoration: none;
+    color: gray;
+}
+
+.link-dashboard:hover {
+    text-decoration: none;
+    color: gray;
 }

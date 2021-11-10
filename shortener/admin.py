@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Shortener
+from shortener.models import AnonymousShortener, Shortener
 
 
+admin.site.register(AnonymousShortener)
 admin.site.register(Shortener)

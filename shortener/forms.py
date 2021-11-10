@@ -1,29 +1,29 @@
 from django import forms
-from django.forms.utils import ErrorDict
+# from django.forms.utils import ErrorDict
 
-from .models import Shortener
-from .utils import check_long_url 
+from shortener.models import AnonymousShortener, Shortener
+from shortener.services import check_long_url
 
 
-class ShortenerForm(forms.ModelForm):
+class AnonymousShortenerForm(forms.ModelForm):
     long_url = forms.CharField(
-        required=False,
         widget=forms.TextInput(
-            attrs={
-                "class": "form-control form-control-md", 
-                "placeholder": "Enter a long link here"
-            }
-        )
-    )
-    ip = forms.CharField(required=False)
+            attrs={"class": "form-control form-control", 
+                   "placeholder": "Enter a long link here"}))
        
     class Meta:
-        model = Shortener
-        fields = ('long_url', 'ip')
+        model = AnonymousShortener
+        fields = ('long_url',)
 
     def clean(self):
         cd = super().clean()
-        long_url = cd.get('long_url', 'X')
+        long_url = cd.get('long_url')
         is_correct = check_long_url(long_url)
         if not is_correct:
-            raise forms.ValidationError("Invalid link!")
+            raise forms.ValidationError("Invalid URL!")
+
+
+class ShortenerForm(AnonymousShortenerForm):
+    class Meta:
+        model = Shortener
+        fields = ('long_url',)

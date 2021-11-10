@@ -129,7 +129,12 @@ dmypy.json
 .pyre/
 
 #custom
-.vscode/
-shortener/migrations/
-templates/
+media/
+static/
+shortener/migrations
+shortener/staticfiles
+shortener/templates
+users/migrations
+users/templates
 url_shortener/settings.py
+requirements.txt

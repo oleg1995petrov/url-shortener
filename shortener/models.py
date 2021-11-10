@@ -1,25 +1,55 @@
-from django.db import models
+import qrcode
 
-from .utils import generate_url
+from django.core.files import File
+from django.db import models
 from django.utils import timezone
 
+from shortener import services
+from users.models import User
 
-class Shortener(models.Model):
-    """ """
-    created = models.DateTimeField(auto_now_add=timezone.now)
-    ip = models.CharField(max_length=15, default='')
-    times_followed = models.PositiveIntegerField(default=0)
-    long_url = models.CharField(max_length=1000, default='')
-    short_url = models.CharField(max_length=5, unique=True, default='')
 
+class ShortenerBase(models.Model):
+    """"""
     class Meta:
-        ordering = ['-created', '-id']
+        abstract = True
+        ordering = ['-id']
+    
+    protocol = models.CharField(max_length=8, default='http://')
+    long_url = models.CharField(max_length=255, default='')
+    short_url = models.CharField(max_length=100, unique=True,
+                                 default='')
 
     def __str__(self, *args, **kwargs):
         return f'{self.long_url} --> {self.short_url}'
 
+    @property
+    def get_long_url(self):
+        return f'{self.protocol}{self.long_url}'
+
     def save(self, *args, **kwargs):
         if not self.short_url:
-            self.short_url = generate_url(self)
+            self.short_url = services.generate_short_url(self)
+        super().save(*args, **kwargs)
 
-        super().save()
+
+class AnonymousShortener(ShortenerBase):
+    """ """
+    ip = models.CharField(max_length=15, default='')
+
+
+class Shortener(ShortenerBase):
+    """ """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, 
+                             related_name='links')
+    created_at = models.DateTimeField(auto_now_add=timezone.now)
+    times_followed = models.PositiveIntegerField(default=0)
+    hidden = models.BooleanField(default=False)
+    qr_code = models.ImageField(upload_to='qr_codes', null=True,
+                                blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.short_url:
+            self.short_url = services.generate_short_url(self)
+            fname, buffer = services.make_qr_code(self)
+            self.qr_code.save(fname, File(buffer), save=False)
+        super().save(*args, **kwargs)
