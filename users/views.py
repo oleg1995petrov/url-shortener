@@ -20,7 +20,7 @@ class SignUpView(View):
             for error in signup_form.errors:
                 messages.error(request, signup_form.errors[error])
 
-        return redirect('/')
+        return redirect('shortener:dashboard')
 
 
 class SignInView(View):
@@ -37,4 +37,4 @@ class SignInView(View):
             for error in signin_form.errors:
                 messages.error(request, signin_form.errors[error])
             
-        return redirect('/')
+        return redirect('shortener:dashboard')
