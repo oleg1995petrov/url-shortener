@@ -6,14 +6,21 @@ from shortener.services import check_long_url
 
 
 class AnonymousShortenerForm(forms.ModelForm):
-    long_url = forms.CharField(
-        widget=forms.TextInput(
-            attrs={"class": "form-control form-control", 
-                   "placeholder": "Enter a long link here"}))
-       
+    """
+    Shortener form for anonymous users.
+    """
     class Meta:
         model = AnonymousShortener
         fields = ('long_url',)
+
+    long_url = forms.CharField(
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control form-control", 
+                "placeholder": "Enter a long link here"
+            }
+        )
+    )
 
     def clean(self):
         cd = super().clean()
@@ -24,6 +31,9 @@ class AnonymousShortenerForm(forms.ModelForm):
 
 
 class ShortenerForm(AnonymousShortenerForm):
+    """
+    Shortener form for authenticated users.
+    """
     class Meta:
         model = Shortener
         fields = ('long_url',)

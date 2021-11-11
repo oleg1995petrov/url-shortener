@@ -16,7 +16,7 @@ def redirect_to(request, short_url):
     except AnonymousShortener.DoesNotExist:
         pass
     else:
-        return redirect(shortener.get_long_url)
+        return redirect(shortener.long_url)
     
     try:
         shortener = Shortener.objects.get(short_url=short_url)
@@ -25,7 +25,7 @@ def redirect_to(request, short_url):
     else:
         shortener.times_followed = F('times_followed') + 1
         shortener.save()
-        return redirect(shortener.get_long_url)
+        return redirect(shortener.long_url)
 
 
 class AnonymousShortenerView(View):
@@ -43,16 +43,15 @@ class AnonymousShortenerView(View):
         return render(request, 'home.html', context)
 
     def post(self, request, *args, **kwargs):
-        link_form = AnonymousShortenerForm(request.POST)
+        link_form = AnonymousShortenerForm(data=request.POST)
         
         if link_form.is_valid():
             shortened_obj = link_form.save(commit=False)
             shortened_obj.ip = get_client_ip(request)
-            shortened_obj.protocol, shortened_obj.long_url = (
-                clean_shortened_obj(shortened_obj))
+            shortened_obj.long_url = clean_shortened_obj(shortened_obj)
             shortened_obj.save()
             return redirect('shortener:home')
-       
+
         for error in link_form.errors:
             messages.error(request, link_form.errors[error])
         return redirect('shortener:home')
@@ -65,34 +64,34 @@ class DashboardView(View):
         
         VISIBLE = 'visible'
         HIDDEN = 'hidden'
-        ENDPOINT = 'dashboard'
 
-        dashboard_menu = HIDDEN if request.GET.get('hidden') == 'true' else VISIBLE
-        links = (Shortener.objects.filter(user=request.user) if dashboard_menu == VISIBLE 
-                 else Shortener.objects.filter(user=request.user, hidden=True))
+        menu = HIDDEN if request.GET.get('hidden') == 'true' else VISIBLE
+        user_links = (request.user.links.all() if menu == VISIBLE else
+                      request.user.links.filter(hidden=True))
         link_form = ShortenerForm()
-        chosen_link_id = request.GET.get('id')
+        active_link_id = request.GET.get('id')
 
         try:
-            chosen_link = Shortener.objects.get(user=request.user, pk=chosen_link_id)
+            active_link = Shortener.objects.get(user=request.user, 
+                                                pk=active_link_id)
         except Shortener.DoesNotExist:
-            chosen_link = None
+            active_link = None
 
         context = {
-            'links': links,
-            'endpoint': ENDPOINT,
-            'dashboard_menu': dashboard_menu,
+            'user_links': user_links,
+            'endpoint': 'dashboard',
+            'menu': menu,
             'link_form': link_form,
-            'chosen_link': chosen_link
+            'active_link': active_link
         }
         return render(request, 'dashboard.html', context)
 
     def post(self, request, *args, **kwargs):
-        link_form = ShortenerForm(request.POST)
+        link_form = ShortenerForm(data=request.POST)
+        
         if link_form.is_valid():
             shortened_obj = link_form.save(commit=False)
-            shortened_obj.protocol, shortened_obj.long_url = (
-                clean_shortened_obj(shortened_obj))
+            shortened_obj.long_url = clean_shortened_obj(shortened_obj)
             shortened_obj.user = request.user
             shortened_obj.save()
         

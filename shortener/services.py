@@ -7,16 +7,23 @@ from io import BytesIO
 from PIL import Image
 
 
-SIZE = 5
+SHORT_URL_SIZE = 5
 AVAILABLE_CHARS = ascii_letters + digits
 PATTERN = r'^(https?:\/\/)?(w{3}\.)?[-\wа-я]+\.[a-zа-я]{2,10}[-\w\.\/\?=&]*$'
 
 
 def generate_random_code(chars=AVAILABLE_CHARS):
-    return ''.join([choice(chars) for _ in range(SIZE)])
+    """
+    Generates random code as short_url for shortener object
+    with SHORT_URL_SIZE length.
+    """
+    return ''.join([choice(chars) for _ in range(SHORT_URL_SIZE)])
 
 
 def generate_short_url(model_instance):
+    """
+    Attaches the generated short_url to model_instance. 
+    """
     random_code = generate_random_code()
     model = model_instance.__class__
     if model.objects.filter(short_url=random_code).exists():
@@ -25,32 +32,23 @@ def generate_short_url(model_instance):
 
 
 def check_long_url(long_url):
+    """"
+    Checks if long_url is valid.
+    """
     is_correct = False
     if re.match(PATTERN, long_url):
         is_correct = True
     return is_correct
 
 
-def get_protocol(shortened_obj):
-    protocol = ('https://' if shortened_obj.long_url.startswith('https') 
-                else 'http://')
-    return protocol
-
-
-def get_long_url(shortened_obj):
-    if shortened_obj.long_url.startswith('https://'):
-        long_url = shortened_obj.long_url[8:]
-    elif shortened_obj.long_url.startswith('http://'):
-        long_url = shortened_obj.long_url[7:]
-    else:
-        long_url = shortened_obj.long_url
-    return  long_url
-
-
 def clean_shortened_obj(shortened_obj):
-    protocol = get_protocol(shortened_obj)
-    long_url = get_long_url(shortened_obj)
-    return protocol, long_url
+    """
+    Checks if long_url contents a protocol. If not, adds http:// to it.
+    """
+    long_url = shortened_obj.long_url
+    if not long_url.startswith('http'):
+        long_url = 'http://' + shortened_obj.long_url
+    return long_url
 
 
 def get_client_ip(request):

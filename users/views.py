@@ -1,41 +1,40 @@
 from django.contrib import messages
-from django.db import IntegrityError
+from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect
 from django.views.generic import View
-from django.contrib.auth import authenticate, login, logout
-# from django.contrib.auth.views import LoginView
 
 from users.forms import SignUpForm, SignInForm
 
 
 class SignUpView(View):
-    """ """
+    """
+    Handles the sign up action.
+    """
     def post(self, request, *args, **kwargs):
-        form = SignUpForm(request.POST)
-        if form.is_valid():
-            user = form.save()
+        signup_form = SignUpForm(data=request.POST)
+
+        if signup_form.is_valid():
+            user = signup_form.save()
             login(request, user)
+        else:
+            for error in signup_form.errors:
+                messages.error(request, signup_form.errors[error])
 
-        for error in form.errors:
-            messages.error(request, form.errors[error])
-
-        return redirect('shortener:home')
+        return redirect('/')
 
 
 class SignInView(View):
-    """ """
+    """
+    Handles the login action.
+    """
     def post(self, request, *args, **kwargs):
-        form = SignInForm(request.POST)
-        if form.is_valid():
-            cd = form.cleaned_data
-            username = cd['email']
-            password = cd['password']
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                # if user.is_active:
-                login(request, user)
+        signin_form = SignInForm(data=request.POST)
 
-        for error in form.errors:
-            messages.error(request, form.errors[error])
+        if signin_form.is_valid():
+            user = signin_form.get_user()
+            login(request, user)
+        else:
+            for error in signin_form.errors:
+                messages.error(request, signin_form.errors[error])
             
         return redirect('/')

@@ -9,22 +9,19 @@ from users.models import User
 
 
 class ShortenerBase(models.Model):
-    """"""
+    """
+    Abstract shortener model.
+    """
     class Meta:
         abstract = True
         ordering = ['-id']
     
-    protocol = models.CharField(max_length=8, default='http://')
     long_url = models.CharField(max_length=255, default='')
     short_url = models.CharField(max_length=100, unique=True,
                                  default='')
 
     def __str__(self, *args, **kwargs):
         return f'{self.long_url} --> {self.short_url}'
-
-    @property
-    def get_long_url(self):
-        return f'{self.protocol}{self.long_url}'
 
     def save(self, *args, **kwargs):
         if not self.short_url:
@@ -33,12 +30,16 @@ class ShortenerBase(models.Model):
 
 
 class AnonymousShortener(ShortenerBase):
-    """ """
+    """
+    Shortener model for anonymous users.
+    """
     ip = models.CharField(max_length=15, default='')
 
 
 class Shortener(ShortenerBase):
-    """ """
+    """
+    Shortener model for authenticated users.
+    """
     user = models.ForeignKey(User, on_delete=models.CASCADE, 
                              related_name='links')
     created_at = models.DateTimeField(auto_now_add=timezone.now)
